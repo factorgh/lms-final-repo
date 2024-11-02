@@ -5,7 +5,8 @@
   "scripts": {
     "start": "server.js",
     "dev": "nodemon server.js",
-    "prod": "node server.js"
+    "prod": "node server.js",
+    "build": "npm install"
   },
   "author": "",
   "license": "ISC",
