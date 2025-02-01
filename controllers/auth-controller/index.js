@@ -16,13 +16,12 @@ const registerUser = async (req, res) => {
     });
   }
 
-  const hashPassword = await bcrypt.hash(password, 10);
   const newUser = new User({
     ...req.body,
     userName,
     userEmail,
     role,
-    password: hashPassword,
+    password,
   });
 
   await newUser.save();
@@ -40,8 +39,9 @@ const loginUser = async (req, res) => {
   const { userEmail, password } = req.body;
 
   const checkUser = await User.findOne({ userEmail });
+  console.log(checkUser);
 
-  if (!checkUser || !(await bcrypt.compare(password, checkUser.password))) {
+  if (!checkUser || !(await checkUser.comparePassword(password))) {
     return res.status(401).json({
       success: false,
       message: "Invalid credentials",
