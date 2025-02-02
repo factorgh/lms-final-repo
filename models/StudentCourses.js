@@ -8,7 +8,6 @@ const StudentCoursesSchema = new mongoose.Schema({
       title: String,
       instructorId: String,
       instructorName: String,
-      dateOfPurchase: Date,
       courseImage: String,
     },
   ],

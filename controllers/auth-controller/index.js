@@ -1,10 +1,23 @@
 const User = require("../../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const School = require("../../models/School");
+const { createSchool } = require("../school");
 
 const registerUser = async (req, res) => {
-  const { userName, userEmail, password, role } = req.body;
+  console.log(req.body); // Debugging
 
+  const { role, userEmail, userName, password, school } = req.body;
+
+  // Validate required fields
+  if (!userEmail || !userName || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "userEmail, userName, and password are required",
+    });
+  }
+
+  // Check if user already exists
   const existingUser = await User.findOne({
     $or: [{ userEmail }, { userName }],
   });
@@ -16,12 +29,19 @@ const registerUser = async (req, res) => {
     });
   }
 
+  // Create school if role is teacher or student
+  if ((role === "teacher" || role === "student") && school) {
+    const createdSchool = await School.create({ name: school });
+    req.body.school = createdSchool._id;
+  }
+
+  // Create new user
   const newUser = new User({
     ...req.body,
-    userName,
-    userEmail,
     role,
-    password,
+    userEmail,
+    userName,
+    password, // Ensure password is included
   });
 
   await newUser.save();
@@ -29,9 +49,7 @@ const registerUser = async (req, res) => {
   return res.status(201).json({
     success: true,
     message: "User registered successfully!",
-    data: {
-      newUser,
-    },
+    data: newUser,
   });
 };
 
