@@ -1,19 +1,20 @@
-import { Router } from "express";
-const router = Router();
+const express = require("express");
+const router = express.Router();
 
-/** import controllers */
-import * as controller from '../controllers/controller.js';
+/** Import controllers */
+const controller = require("../controllers/controller.js");
 
 /** Questions Routes API */
+router
+  .route("/questions")
+  .get(controller.getQuestions) // GET Request
+  .post(controller.insertQuestions) // POST Request
+  .delete(controller.dropQuestions); // DELETE Request
 
-router.route('/questions')
-        .get(controller.getQuestions) /** GET Request */
-        .post(controller.insertQuestions) /** POST Request */
-        .delete(controller.dropQuestions) /** DELETE Request */
+router
+  .route("/result")
+  .get(controller.getResult)
+  .post(controller.storeResult)
+  .delete(controller.dropResult);
 
-router.route('/result')
-        .get(controller.getResult)
-        .post(controller.storeResult)
-        .delete(controller.dropResult)
-
-export default router;
+module.exports = router;

@@ -31,6 +31,12 @@ const CourseSchema = new mongoose.Schema({
   ],
   curriculum: [LectureSchema],
   isPublised: Boolean,
+  quizzes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Question",
+    },
+  ],
 });
 
 module.exports = mongoose.model("Course", CourseSchema);

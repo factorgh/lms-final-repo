@@ -1,15 +1,15 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-/** question model */
-const questionModel = new Schema({
+/** Question Model */
+const questionSchema = new Schema({
   course_id: {
     type: Schema.Types.ObjectId,
     ref: "Course",
   },
-  questions: { type: Array, default: [] }, // create question with [] default value
+  questions: { type: Array, default: [] }, // Default value is an empty array
   answers: { type: Array, default: [] },
   createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.model("Question", questionModel);
+module.exports = mongoose.model("Question", questionSchema);
