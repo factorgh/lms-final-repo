@@ -8,7 +8,7 @@ const controller = require("../controllers/controller.js");
 router
   .route("/questions")
   .get(controller.getQuestions) // GET Request
-  .post(controller.insertQuestions) // POST Request
+  .post(controller.createQuestion) // POST Request
   .delete(controller.dropQuestions); // DELETE Request
 
 router
