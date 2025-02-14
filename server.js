@@ -12,6 +12,7 @@ const studentCoursesRoutes = require("./routes/student-routes/student-courses-ro
 const studentCourseProgressRoutes = require("./routes/student-routes/course-progress-routes");
 const schoolsRoutes = require("./routes/school");
 const QuizRoutes = require("./Quizses/router/route");
+const certificateRoutes = require("./routes/student-routes/certificate-routes-final");
 
 const app = express();
 const PORT = process.env.PORT || 9000;
@@ -44,6 +45,7 @@ app.use("/student/courses-bought", studentCoursesRoutes);
 app.use("/student/course-progress", studentCourseProgressRoutes);
 app.use("/schools", schoolsRoutes);
 app.use("/quiz", QuizRoutes);
+app.use("/certificate", certificateRoutes);
 
 app.use((err, req, res, next) => {
   console.log(err.stack);

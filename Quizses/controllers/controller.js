@@ -1,6 +1,7 @@
 const questions = require("../../database/data.js");
 const Questions = require("../models/questionSchema.js");
 const Result = require("../models/resultSchema.js");
+const Course = require("../../models/Course.js");
 
 /** Get all questions */
 const getQuestions = async (req, res) => {
@@ -35,6 +36,15 @@ const createQuestion = async (req, res) => {
       questions,
       answers,
     });
+
+    // Also get course by course id and push new question ID TO IT QUIZZESS PROPERT
+    const course = await Course.findById(course_id);
+    console.log(course);
+    course.quizzes.push(newQuestion._id);
+    await course.save();
+
+    // Send success response with new question
+
     res.json({ msg: "Question Saved Successfully...!", data: newQuestion });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -64,13 +74,13 @@ const getResult = async (req, res) => {
 /** Store a result */
 const storeResult = async (req, res) => {
   try {
-    const { username, result, attempts, points, achieved } = req.body;
+    const { userId, result, attempts, points, achieved } = req.body;
     if (!username || !result) {
       return res.status(400).json({ error: "Data Not Provided...!" });
     }
 
     const newResult = await Result.create({
-      username,
+      userId,
       result,
       attempts,
       points,
@@ -92,6 +102,16 @@ const dropResult = async (req, res) => {
   }
 };
 
+const getQuizByCourseId = async (req, res) => {
+  try {
+    const { courseId } = req.body;
+    const quiz = await Questions.find({ course_id: courseId });
+    return res.send(quiz);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Export functions using CommonJS
 module.exports = {
   getQuestions,
@@ -101,4 +121,5 @@ module.exports = {
   getResult,
   storeResult,
   dropResult,
+  getQuizByCourseId,
 };

@@ -9,26 +9,27 @@ const getCoursesByStudentId = async (req, res) => {
     // Find student's enrolled courses (returns only course IDs)
     const studentBoughtCourses = await StudentCourses.findOne({
       userId: studentId,
-    });
+    }).populate(
+      "courses.courseId"
+      // {
+      // path: "courses.courseId", // Populate the course details
+      // populate: {
+      //   path: "quizzes", // Populate the quizzes inside each course
+      //   model: "Question", // Ensure this matches your Quiz model name
+      // },
+      // }
+    );
+
+    console.log(studentBoughtCourses);
+
     console.log(
       "----------------------------Student Course---------------------------"
     );
-    console.log(studentBoughtCourses);
-    if (studentBoughtCourses.length === 0) {
-      return res.status(200).json({
-        success: true,
-        data: [],
-      });
-    }
-
-    // ✅ Manually fetch all course details using the course IDs
-    const courses = await Course.find({
-      _id: { $in: studentBoughtCourses.courses },
-    });
+    console.log(studentBoughtCourses.courses);
 
     res.status(200).json({
       success: true,
-      data: courses, // Return full course details
+      data: studentBoughtCourses,
     });
   } catch (error) {
     console.error(error);
@@ -45,6 +46,8 @@ const enrollForFreeCourse = async (req, res) => {
     const { courseId, studentId, studentName, studentEmail } = req.body;
     const courseDe = new mongoose.Types.ObjectId(courseId);
     const studentDe = new mongoose.Types.ObjectId(studentId);
+
+    console.log(courseDe, studentDe);
 
     // Find the course by ID
     const course = await Course.findById(courseDe);
@@ -66,25 +69,47 @@ const enrollForFreeCourse = async (req, res) => {
     let studentCourses = await StudentCourses.findOne({ userId: studentDe });
 
     if (studentCourses) {
-      // If student already has a course list, prevent duplicate enrollment
-      if (studentCourses.courses.includes(courseDe)) {
+      // ❌ Fix: Use `.some()` instead of `.includes()`
+      if (
+        studentCourses.courses.some(
+          (c) => c.courseId.toString() === courseDe.toString()
+        )
+      ) {
         return res.status(400).json({
           success: false,
           message: "You are already enrolled in this course!",
         });
       }
 
-      // ✅ Update existing student courses list
+      // ✅ Fix: Properly structure the `courses` array
       studentCourses = await StudentCourses.findOneAndUpdate(
         { userId: studentDe },
-        { $addToSet: { courses: courseDe } }, // Prevents duplicate courses
+        {
+          $push: {
+            courses: {
+              courseId: courseDe,
+              title: course.title,
+              instructorId: course.instructorId,
+              instructorName: course.instructorName,
+              courseImage: course.courseImage,
+            },
+          },
+        },
         { new: true }
       );
     } else {
-      // ✅ Create a new student course entry if it doesn't exist
+      // ✅ Fix: Store the course as an object, not just an ID
       studentCourses = await StudentCourses.create({
         userId: studentDe,
-        courses: [courseDe],
+        courses: [
+          {
+            courseId: courseDe,
+            title: course.title,
+            instructorId: course.instructorId,
+            instructorName: course.instructorName,
+            courseImage: course.courseImage,
+          },
+        ],
       });
     }
 
@@ -134,8 +159,39 @@ const checkEnrollment = async (req, res) => {
   }
 };
 
+const getStudentQuizzes = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Find student's enrolled courses and populate course details with quizzes
+    const studentCourses = await StudentCourses.findOne({ userId }).populate({
+      path: "courses.courseId",
+      populate: { path: "quizzes", model: "Question" }, // Ensure "Question" is the correct model name
+    });
+
+    if (!studentCourses) {
+      return res
+        .status(404)
+        .json({ message: "No courses found for this student." });
+    }
+
+    // Extract quizzes along with course ID and title
+    const quizzesWithCourses = studentCourses.courses.map((course) => ({
+      courseId: course.courseId._id,
+      courseTitle: course.courseId.title,
+      quizzes: course.courseId.quizzes,
+    }));
+
+    return res.send(quizzesWithCourses);
+  } catch (error) {
+    console.error("Error fetching quizzes:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   getCoursesByStudentId,
   enrollForFreeCourse,
   checkEnrollment,
+  getStudentQuizzes,
 };

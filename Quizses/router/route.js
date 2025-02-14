@@ -9,7 +9,9 @@ router
   .route("/questions")
   .get(controller.getQuestions) // GET Request
   .post(controller.createQuestion) // POST Request
-  .delete(controller.dropQuestions); // DELETE Request
+  .delete(controller.dropQuestions);
+
+router.route("/course").get(controller.getQuizByCourseId);
 
 router
   .route("/result")

@@ -4,11 +4,7 @@ const StudentCoursesSchema = new mongoose.Schema({
   userId: String,
   courses: [
     {
-      courseId: String,
-      title: String,
-      instructorId: String,
-      instructorName: String,
-      courseImage: String,
+      courseId: { type: mongoose.Schema.Types.ObjectId, ref: "Course" }, // Reference to Course
     },
   ],
 });
